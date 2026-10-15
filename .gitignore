@@ -1,0 +1,6 @@
+gas/
+dev/
+content/
+docs/
+.DS_Store
+node_modules/
