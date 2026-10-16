@@ -2,7 +2,7 @@
  * code: KcLep 계정 코드(⚠ verified=false 인 동안은 화면에 코드를 보여 주지 않는다 — 윈도우 KcLep에서 실측해 확정)
  * cls: 자산/부채/자본/수익/비용, grp: 화면 묶음, r: 카드 등급(N·R·SR·SSR — 헷갈리는 계정일수록 높게)
  */
-window.ACCOUNTS_VERIFIED = true;   // 2026-10-16 실습실 KcLep 캡처(K06·K10b·K12)로 체계 확인. 계정과목.csv 오면 전부 대조
+window.ACCOUNTS_VERIFIED = true;   // 2026-10-16 수험용 데이터(1264 경환상사) 계정과목및적요등록 22장과 83개 전부 대조 완료
 window.ACCOUNTS = [
   // 자산 — 당좌자산
   { code: 101, name: '현금', cls: '자산', grp: '당좌자산', r: 'N' },
@@ -25,7 +25,7 @@ window.ACCOUNTS = [
   { code: 141, name: '현금과부족', cls: '자산', grp: '당좌자산', r: 'SR' },
   { code: 147, name: '매입환출및에누리', cls: '자산', grp: '재고자산', r: 'SR', minus: true },
   { code: 148, name: '매입할인', cls: '자산', grp: '재고자산', r: 'SR', minus: true },
-  { code: 122, name: '소모품', cls: '자산', grp: '재고자산', r: 'SR' },
+  { code: 173, name: '소모품', cls: '자산', grp: '재고자산', r: 'SR' },
   // 자산 — 투자·유형
   { code: 179, name: '장기대여금', cls: '자산', grp: '투자자산', r: 'R' },
   { code: 201, name: '토지', cls: '자산', grp: '유형자산', r: 'N' },
