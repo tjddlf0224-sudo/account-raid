@@ -35,7 +35,7 @@
       box.appendChild(h('div', { class: 'h', style: 'font-size:22px', text: res.cls.title }));
       box.appendChild(h('div', { class: 'muted', style: 'margin-bottom:10px', text: res.room.stage + '층 · ' + ((U.stageData(res.room.stage) || {}).title || '') + ' — 내 이름을 누르세요' }));
       var grid = h('div', { class: 'namegrid' });
-      res.cls.roster.forEach(function (e) { grid.appendChild(h('button', { class: e.reg ? 'reg' : '', text: e.name, onclick: function () { askPin(e, res); } })); });
+      res.cls.roster.forEach(function (e) { grid.appendChild(h('button', { text: e.name, onclick: function () { askPin(e, res); } })); });
       box.appendChild(grid);
       if (res.cls.selfJoin) box.appendChild(h('button', { class: 'btn', style: 'width:100%;margin-top:10px', text: '+ 명단에 내 이름이 없어요', onclick: function () { askPin(null, res); } }));
     });
@@ -48,7 +48,7 @@
     var go = h('button', { class: 'btn gold big', style: 'width:100%;margin-top:12px', text: '입장', onclick: submit });
     pin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') submit(); });
     box.appendChild(h('div', { class: 'h', style: 'font-size:24px', text: e ? e.name : '새로 등록' }));
-    box.appendChild(h('div', { class: 'muted', style: 'margin:4px 0 10px;font-size:14px', text: e && e.reg ? '처음에 정한 비밀번호 4자리' : '처음이면 지금 정하는 4자리가 내 비밀번호가 돼요(잊지 마세요!)' }));
+    box.appendChild(h('div', { class: 'muted', style: 'margin:4px 0 10px;font-size:14px', text: '처음 들어오면 지금 정하는 숫자 4자리가 내 비밀번호가 돼요. 전에 정했다면 그 4자리를 넣으세요.' }));
     if (name) box.appendChild(name);
     box.appendChild(pin); box.appendChild(go);
     box.appendChild(h('button', { class: 'btn', style: 'width:100%;margin-top:8px', text: '← 이름 다시 고르기', onclick: function () { pickName(S.code); } }));
@@ -91,7 +91,7 @@
 
   function resume(saved) {
     S.code = saved.code; S.sid = saved.sid; S.token = saved.token; S.cid = saved.cid;
-    API.get({ a: 'me', cid: S.cid, sid: S.sid, token: S.token }).then(function (r) {
+    API.get({ a: 'me', cid: S.cid, u: S.sid, token: S.token }).then(function (r) {
       if (!r.ok) { U.store('sess', null); return pickName(S.code); }
       S.me = r.me;
       // 이 방에 처음이면 입장 처리(출석)가 필요 → 이름 고르기부터
@@ -111,7 +111,7 @@
     $('#hudAv').onclick = function () { avatarPick(drawHud); };
     $('#readyBtn').onclick = toggleReady;
     drawHud();
-    if (!S.cur) API.get({ a: 'me', cid: S.cid, sid: S.sid, token: S.token }).then(function (r) { if (r.ok) { S.cur = r.cur; S.me = r.me; } tick(); });
+    if (!S.cur) API.get({ a: 'me', cid: S.cid, u: S.sid, token: S.token }).then(function (r) { if (r.ok) { S.cur = r.cur; S.me = r.me; } tick(); });
     else tick();
   }
 
@@ -134,7 +134,7 @@
 
   function tick() {
     clearTimeout(S.poll);
-    API.get({ a: 'st', code: S.code, sid: S.sid, token: S.token }).then(function (r) {
+    API.get({ a: 'st', code: S.code, u: S.sid, token: S.token }).then(function (r) {
       if (r.ok) apply(r);
       else if (r.err === 'auth') { U.store('sess', null); U.toast('다시 입장해 주세요'); setTimeout(function () { location.reload(); }, 1500); return; }
       var raid = S.room && S.room.turnName === 'raid';

@@ -80,11 +80,11 @@
       r.cls.roster.forEach(function (e) {
         var s = stu[e.sid];
         tbl.appendChild(h('tr', { style: e.hidden ? 'opacity:.4' : '' }, [
-          h('td', {}, [s ? h('img', { src: U.avSrc(s.av) }) : null]), h('td', { text: e.name + (e.reg ? '' : ' (미등록)') }),
+          h('td', {}, [s ? h('img', { src: U.avSrc(s.av) }) : null]), h('td', { text: e.name + (s && s.reg ? '' : ' (미등록)') }),
           h('td', { text: s ? s.lv : '' }), h('td', { text: s ? U.fmt(s.xp) : '' }), h('td', { text: s ? U.fmt(s.gold) : '' }),
           h('td', { text: s ? Object.keys(s.cards || {}).length : '' }), h('td', { text: s ? Object.keys(s.attend || {}).length : '' }),
           h('td', {}, [
-            s ? h('button', { class: 'pill', text: '비번 초기화', onclick: function () { if (!confirm(e.name + ' 학생의 비밀번호를 지울까요? (다음 입장 때 새로 정함)')) return; API.post({ a: 't_resetPin', pin: T.pin, cid: T.cid, sid: e.sid }).then(function (x) { U.toast(x.ok ? '초기화했어요' : U.errMsg(x)); }); } }) : null,
+            s && s.reg ? h('button', { class: 'pill', text: '비번 초기화', onclick: function () { if (!confirm(e.name + ' 학생의 비밀번호를 지울까요? (다음 입장 때 새로 정함)')) return; API.post({ a: 't_resetPin', pin: T.pin, cid: T.cid, sid: e.sid }).then(function (x) { U.toast(x.ok ? '초기화했어요' : U.errMsg(x)); }); } }) : null,
             h('button', { class: 'pill', text: e.hidden ? '보이기' : '숨기기', onclick: function () { API.post({ a: 't_roster', pin: T.pin, cid: T.cid, hide: e.sid }).then(klass); } })
           ])
         ]));
