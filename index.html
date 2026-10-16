@@ -128,22 +128,48 @@ main#stage{padding-bottom:110px}
 .opts button.ok{border-color:var(--mint);background:rgba(62,230,176,.15)} .opts button.no{border-color:var(--red);background:rgba(255,90,95,.15)}
 .sidebtn{display:flex;gap:12px;margin-top:14px}
 
-/* 케이렙 전표 */
-.slip{margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid #6a7da8;background:#f3f6fb;color:#1a2233;font-family:'Pretendard','Malgun Gothic',sans-serif}
-.slip table{width:100%;border-collapse:collapse;font-size:16px}
-.slip th{background:linear-gradient(180deg,#5b7bb7,#3f5e9a);color:#fff;font-weight:700;padding:7px 6px;font-size:14px;border-right:1px solid #2f4a80}
-.slip td{border-top:1px solid #c5d0e3;border-right:1px solid #dbe2ee;padding:0}
-.slip td.lbl{background:#e6ecf7;text-align:center;font-weight:800;width:62px;font-size:14px}
-.slip tr.dr td.lbl{color:#1b56c4} .slip tr.cr td.lbl{color:#c4321b}
-.slip input{width:100%;border:0;background:transparent;padding:9px 8px;font-size:17px;outline:none;color:#1a2233}
-.slip input:focus{background:#fff6c7}
-.slip input.amt{text-align:right;font-variant-numeric:tabular-nums}
-.slip .code{width:56px;color:#5a6a8a;text-align:center;font-size:14px}
-.slip tfoot td{background:#e6ecf7;font-weight:800;padding:7px 8px;text-align:right;font-variant-numeric:tabular-nums}
-.slip .bad{background:#ffe1e1!important} .slip .good{background:#dff7ea!important}
-.codehelp{position:absolute;z-index:40;background:#fff;color:#1a2233;border:1px solid #5b7bb7;border-radius:8px;box-shadow:var(--shadow);max-height:220px;overflow:auto;min-width:220px;font-size:15px}
-.codehelp div{padding:6px 10px;display:flex;gap:10px;cursor:pointer} .codehelp div.on,.codehelp div:hover{background:#dce7ff}
-.codehelp b{color:#3f5e9a;width:34px}
+/* 케이렙 전표 — 실제 KcLep 일반전표입력 화면(2026 교육용) 모양 */
+.kclep{position:relative;margin-top:14px;border:1px solid #8ea0bd;border-radius:6px;overflow:hidden;background:#fff;color:#1b2232;font-family:'Malgun Gothic','맑은 고딕','Pretendard',sans-serif;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.kclep .ktitle{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#dfe8f6;border-bottom:1px solid #b9c7dc}
+.kclep .ktitle b{font-size:14px;color:#1b2232} .kclep .kco{font-size:12.5px;color:#33415c;background:#fff;border:1px solid #c4cfe0;border-radius:4px;padding:1px 8px}
+.kclep .ktool{display:flex;gap:18px;padding:7px 14px;background:#2e3d59;color:#e9eef8;font-size:13px}
+.kclep .kdate{display:flex;align-items:center;gap:4px;padding:8px 12px;font-size:13.5px;background:#f6f8fb;border-bottom:1px solid #d6deea}
+.kclep .kdate .box{display:inline-block;min-width:40px;padding:2px 6px;border:1px solid #9fb0c9;background:#fff;text-align:center}
+.kclep .kdiff{display:inline-block;min-width:130px;padding:2px 8px;border:1px solid #c9d3e2;background:#eef2f7;text-align:right;color:#c4321b;font-weight:700}
+.kclep .kbody{overflow-x:auto}
+.kgrid{width:100%;border-collapse:collapse;min-width:760px}
+.kgrid th{background:#eef1f6;color:#222;font-weight:600;font-size:13.5px;padding:5px 4px;border:1px solid #cfd7e3;letter-spacing:.5px}
+.kgrid td{border:1px solid #dfe5ee;height:30px;padding:0}
+.kgrid td.c{text-align:center} .kgrid td.day{width:34px} .kgrid td.no{width:58px;color:#555}
+.kgrid td.gub{width:70px;position:relative}
+.kgrid td.gub input{width:24px;text-align:center} .kgrid td.gub .gl{font-weight:700;margin-left:2px}
+.kgrid tr[data-g="3"] .gl{color:#1b56c4} .kgrid tr[data-g="4"] .gl{color:#c4321b} .kgrid tr[data-g="1"] .gl,.kgrid tr[data-g="2"] .gl{color:#0d6b3a}
+.kgrid td.cdc{width:50px;text-align:center;color:#2b3a55;font-variant-numeric:tabular-nums}
+.kgrid td.nm{min-width:120px} .kgrid td.memo{width:90px;background:#fafbfd}
+.kgrid td.num{width:120px;text-align:right;padding-right:6px;font-variant-numeric:tabular-nums}
+.kgrid input{width:100%;height:30px;border:0;background:transparent;padding:0 6px;font:inherit;font-size:15px;color:#1b2232;outline:none}
+.kgrid input.amt{text-align:right}
+.kgrid input:disabled{background:#f3f5f9} .kgrid input::placeholder{color:#7a8496}
+.kgrid input:focus{background:#fff9d6;box-shadow:inset 0 0 0 2px #4a7bd0}
+.kgrid tr.on td{background:#e7effc}
+.kgrid tr.bad td{background:#ffe3e3!important} .kgrid tr.good td{background:#e2f7ea!important}
+.kgrid tfoot td{background:#eef1f6;font-weight:700;height:28px;text-align:right;padding-right:8px}
+.kgrid tfoot td.c{text-align:center;letter-spacing:6px}
+.kclep .ktip{display:flex;gap:8px;align-items:center;padding:5px 10px;background:#f2f4f8;border-top:1px solid #d6deea;font-size:13px;color:#333}
+.kclep .ktip b{background:#2e5aa8;color:#fff;border-radius:3px;padding:0 6px;font-size:12px}
+.khelp{position:absolute;left:50%;top:60px;transform:translateX(-50%);width:380px;background:#fff;border:1px solid #7f93b4;box-shadow:0 12px 30px rgba(0,0,0,.35);z-index:5;font-size:13.5px}
+.khelp .kht{display:flex;justify-content:space-between;padding:6px 10px;background:#dfe8f6;border-bottom:1px solid #b9c7dc}
+.khelp .kht .x{cursor:pointer;color:#555}
+.khelp .khs{display:flex;gap:6px;padding:8px}
+.khelp .khs .sel{border:1px solid #9fb0c9;padding:3px 10px;background:#fff}
+.khelp .khs input{flex:1;border:1px solid #9fb0c9;padding:3px 8px;font:inherit;font-size:15px;outline:none}
+.khelp .khl{max-height:230px;overflow:auto;margin:0 8px;border:1px solid #cfd7e3}
+.khelp table{width:100%;border-collapse:collapse}
+.khelp th{background:#eef1f6;font-weight:600;padding:4px;border:1px solid #cfd7e3}
+.khelp td{padding:4px 8px;border-bottom:1px solid #eef1f6;cursor:pointer} .khelp td:first-child{width:56px;font-variant-numeric:tabular-nums}
+.khelp tr.on td{background:#2e5aa8;color:#fff}
+.khelp .khb{display:flex;justify-content:flex-end;gap:6px;padding:8px}
+.khelp .khb span{border:1px solid #9fb0c9;padding:3px 10px;background:#f6f8fb}
 
 /* 점수 팝 */
 .pop{position:fixed;pointer-events:none;z-index:95;font-family:var(--hfont);font-size:30px;color:var(--gold);text-shadow:0 3px 0 #7a4300,0 0 18px rgba(255,207,74,.8);animation:pop 1s forwards}

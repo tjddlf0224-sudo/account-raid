@@ -108,112 +108,178 @@
     return out.filter(function (n) { return W.ACCOUNT_BY_NAME[n]; });
   }
 
-  // KcLep 일반전표 비슷한 표
+  // KcLep 일반전표입력 화면을 닮은 표 (2026-10-16 실습실 캡처 K10b·K11·K12 기준)
+  //  구분 1.출금 2.입금 3.차변 4.대변 을 직접 치고, 계정과목은 이름을 치고 Enter → 계정코드도움 창에서 고른다.
+  //  출금 = (차) 계정 / (대) 현금, 입금 = (차) 현금 / (대) 계정 으로 채점(출금전표 정답도 인정).
+  var GUBUN = { '1': '출금', '2': '입금', '3': '차변', '4': '대변' };
+  function code4(a) { return a ? String(a.code).padStart(4, '0') : ''; }
   function slip(it, opts) {
     opts = opts || {};
-    var nDr = Math.max(2, (it.dr || []).length), nCr = Math.max(2, (it.cr || []).length);
-    var rows = [], tbody = h('tbody'), help = null;
-    function addRow(side, pre) {
-      var acc = h('input', { placeholder: side === 'dr' ? '차변 계정' : '대변 계정', autocomplete: 'off' });
-      var code = h('td', { class: 'code' });
-      var par = h('input', { placeholder: '거래처', autocomplete: 'off' });
-      var amt = h('input', { class: 'amt', placeholder: '0', inputmode: 'numeric', autocomplete: 'off' });
-      var tr = h('tr', { class: side }, [h('td', { class: 'lbl', text: side === 'dr' ? '3 차변' : '4 대변' }), code, h('td', {}, [acc]), h('td', {}, [par]), h('td', { style: 'width:30%' }, [amt])]);
-      [acc, par, amt].forEach(function (x) { x.addEventListener('paste', function (e) { e.preventDefault(); U.toast('직접 쳐야 각인돼요!'); }); });
-      amt.addEventListener('input', function () { var d = amt.value.replace(/[^\d]/g, ''); amt.value = d ? (+d).toLocaleString('ko-KR') : ''; total(); });
-      acc.addEventListener('input', function () { showHelp(acc); code.textContent = ''; FX.play('key'); });
-      acc.addEventListener('blur', function () { setTimeout(function () { hideHelp(); var a = W.ACCOUNT_BY_NAME[canon(acc.value)]; code.textContent = a && W.ACCOUNTS_VERIFIED ? a.code : ''; }, 150); });
+    var day = (String(it.q || '').match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/) || [])[2] || '';
+    var mon = (String(it.q || '').match(/(\d{1,2})\s*월/) || [])[1] || '';
+    var rows = [], tbody = h('tbody'), help = null, tip = h('span', { text: '구분을 입력하세요. 1.출금, 2.입금, 3.차변, 4.대변' });
+    var diffEl = h('span', { class: 'kdiff' }), tDr = h('td', { class: 'num' }), tCr = h('td', { class: 'num' });
+    function setTip(t) { tip.textContent = t; }
+    function addRow() {
+      var g = h('input', { class: 'g', maxlength: 1, inputmode: 'numeric', autocomplete: 'off' });
+      var gl = h('span', { class: 'gl' });
+      var acode = h('span', { class: 'cd' }), acc = h('input', { class: 'acc', autocomplete: 'off' });
+      var pcode = h('span', { class: 'cd' }), par = h('input', { class: 'par', autocomplete: 'off' });
+      var dr = h('input', { class: 'amt', inputmode: 'numeric', autocomplete: 'off' }), cr = h('input', { class: 'amt', inputmode: 'numeric', autocomplete: 'off' });
+      var drCell = h('td', { class: 'num' }, [dr]), crCell = h('td', { class: 'num' }, [cr]);
+      var tr = h('tr', {}, [
+        h('td', { class: 'c day', text: day }), h('td', { class: 'c no', text: day ? '00001' : '' }),
+        h('td', { class: 'c gub' }, [g, gl]),
+        h('td', { class: 'cdc' }, [acode]), h('td', { class: 'nm' }, [acc]),
+        h('td', { class: 'cdc' }, [pcode]), h('td', { class: 'nm' }, [par]),
+        h('td', { class: 'memo' }), drCell, crCell
+      ]);
+      var r = { tr: tr, g: g, gl: gl, acc: acc, acode: acode, par: par, pcode: pcode, dr: dr, cr: cr, drCell: drCell, crCell: crCell };
+      [g, acc, par, dr, cr].forEach(function (x) {
+        x.addEventListener('paste', function (e) { e.preventDefault(); U.toast('직접 쳐야 각인돼요!'); });
+        x.addEventListener('focus', function () { rows.forEach(function (q) { q.tr.classList.remove('on'); }); tr.classList.add('on'); });
+      });
+      g.addEventListener('focus', function () { setTip('구분을 입력하세요. 1.출금, 2.입금, 3.차변, 4.대변'); });
+      acc.addEventListener('focus', function () { setTip('계정코드를 입력하세요. 기능키F2-도움창, 명입력후 엔터-도움창'); });
+      par.addEventListener('focus', function () { setTip('거래처를 입력하세요. 채권·채무(외상매출금·미지급금 등)는 거래처가 꼭 있어야 해요'); });
+      dr.addEventListener('focus', function () { setTip('금액을 입력하세요.'); }); cr.addEventListener('focus', function () { setTip('금액을 입력하세요.'); });
+      g.addEventListener('input', function () {
+        g.value = g.value.replace(/[^1-4]/g, '').slice(0, 1); FX.play('key');
+        applyG(r);
+        if (g.value) acc.focus();
+      });
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); if (g.value) acc.focus(); else if (rowFilled(prev(r)) && opts.onEnter) opts.onEnter(); } });
+      acc.addEventListener('input', function () { r.acode.textContent = ''; FX.play('key'); });
       acc.addEventListener('keydown', function (e) {
-        if (help && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); moveHelp(e.key === 'ArrowDown' ? 1 : -1); return; }
-        if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); if (help) pickHelp(); nextField(acc); }
-        if (e.key === 'F2') { e.preventDefault(); showHelp(acc, true); }
+        if (e.key === 'F2') { e.preventDefault(); openHelp(r); return; }
+        if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+          e.preventDefault();
+          var v = canon(acc.value);
+          if (!v) return;
+          if (/^\d{1,4}$/.test(v)) { var byCode = W.ACCOUNTS.filter(function (a) { return a.code === +v; })[0]; if (byCode) { setAcc(r, byCode); return nextFrom(r, 'acc'); } }
+          openHelp(r);
+        }
       });
-      par.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); nextField(par); } });
-      amt.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); if (!nextField(amt) && opts.onEnter) opts.onEnter(); } });
-      if (pre) { amt.value = pre[1] ? (+pre[1]).toLocaleString('ko-KR') : ''; }
-      rows.push({ side: side, tr: tr, acc: acc, par: par, amt: amt, code: code });
-      tbody.appendChild(tr);
+      par.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); if (par.value.trim()) pcode.textContent = '0' + (1000 + (hashName(par.value) % 9000)); nextFrom(r, 'par'); } });
+      [dr, cr].forEach(function (x) {
+        x.addEventListener('input', function () { var d = x.value.replace(/[^\d]/g, ''); x.value = d ? (+d).toLocaleString('ko-KR') : ''; total(); });
+        x.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); nextFrom(r, 'amt'); } });
+      });
+      rows.push(r); tbody.appendChild(tr); applyG(r);
+      return r;
     }
-    function nextField(el) {
-      var all = []; rows.forEach(function (r) { all.push(r.acc, r.par, r.amt); });
-      var i = all.indexOf(el);
-      // 거래처가 필요 없는 계정이면 거래처 칸 건너뛰기
-      for (var j = i + 1; j < all.length; j++) {
-        var r = rows[Math.floor(j / 3)];
-        if (j % 3 === 1 && !partnerNeeded(canon(r.acc.value))) continue;
-        all[j].focus(); return true;
+    function hashName(s) { var h2 = 0; for (var i = 0; i < s.length; i++) h2 = (h2 * 31 + s.charCodeAt(i)) >>> 0; return h2; }
+    function prev(r) { var i = rows.indexOf(r); return rows[i - 1]; }
+    function rowFilled(r) { return r && r.g.value && canon(r.acc.value) && amtOf(r) > 0; }
+    function amtOf(r) { var x = (r.g.value === '1' || r.g.value === '3') ? r.dr : r.cr; return +x.value.replace(/[^\d]/g, '') || 0; }
+    function applyG(r) {
+      var g = r.g.value;
+      r.gl.textContent = GUBUN[g] || '';
+      r.tr.dataset.g = g;
+      var drOn = g === '1' || g === '3', crOn = g === '2' || g === '4';
+      r.dr.disabled = !drOn; r.cr.disabled = !crOn;
+      r.dr.placeholder = g === '2' ? '(현금)' : ''; r.cr.placeholder = g === '1' ? '(현금)' : '';
+      if (!drOn) r.dr.value = ''; if (!crOn) r.cr.value = '';
+      total();
+    }
+    function setAcc(r, a) { r.acc.value = a.name; r.acode.textContent = code4(a); FX.play('tick'); }
+    function nextFrom(r, field) {
+      if (field === 'acc') { if (partnerNeeded(canon(r.acc.value))) return r.par.focus(); field = 'par'; }
+      if (field === 'par') { var x = (r.g.value === '1' || r.g.value === '3') ? r.dr : r.cr; if (!x.disabled) return x.focus(); }
+      // 금액 다음 → 다음 줄 구분(없으면 새 줄)
+      var i = rows.indexOf(r), nx = rows[i + 1] || addRow();
+      nx.g.focus();
+    }
+    // 계정코드도움 창
+    function openHelp(r) {
+      closeHelp();
+      var q = h('input', { class: 'hq', value: canon(r.acc.value), autocomplete: 'off' });
+      var list = h('tbody'), idx = 0, items = [];
+      function fill() {
+        var v = canon(q.value);
+        items = W.ACCOUNTS.filter(function (a) { return !v || a.name.indexOf(v) >= 0 || String(a.code).indexOf(v.replace(/^0+/, '')) === 0; }).slice(0, 12);
+        list.innerHTML = ''; idx = 0;
+        items.forEach(function (a, k) { list.appendChild(h('tr', { class: k === 0 ? 'on' : '', onmousedown: function (e) { e.preventDefault(); idx = k; pick(); } }, [h('td', { text: code4(a) }), h('td', { text: a.name }), h('td', { text: '' })])); });
+        if (!items.length) list.appendChild(h('tr', {}, [h('td', { colspan: 3, style: 'text-align:center;color:#888', text: '찾는 계정이 없어요' })]));
       }
-      return false;
-    }
-    var helpIdx = 0, helpFor = null, helpList = [];
-    function showHelp(inp, force) {
-      var v = canon(inp.value);
-      if (!v && !force) return hideHelp();
-      helpList = W.ACCOUNTS.filter(function (a) { return !v || a.name.indexOf(v) >= 0 || (W.ACCOUNTS_VERIFIED && String(a.code).indexOf(v) === 0); }).slice(0, 8);
-      if (!helpList.length || (helpList.length === 1 && helpList[0].name === v)) return hideHelp();
-      hideHelp(); helpFor = inp; helpIdx = 0;
-      help = h('div', { class: 'codehelp' });
-      helpList.forEach(function (a, k) {
-        help.appendChild(h('div', { class: k === 0 ? 'on' : '', onmousedown: function (e) { e.preventDefault(); helpIdx = k; pickHelp(); nextField(inp); } }, [h('b', { text: W.ACCOUNTS_VERIFIED ? a.code : '' }), a.name]));
+      function mv(d) { if (!items.length) return; idx = (idx + d + items.length) % items.length; U.$$('tr', list).forEach(function (x, k) { x.classList.toggle('on', k === idx); }); }
+      function pick() { var a = items[idx]; if (!a) return; setAcc(r, a); closeHelp(); nextFrom(r, 'acc'); }
+      q.addEventListener('input', fill);
+      q.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); mv(1); } else if (e.key === 'ArrowUp') { e.preventDefault(); mv(-1); }
+        else if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); pick(); }
+        else if (e.key === 'Escape') { e.preventDefault(); closeHelp(); r.acc.focus(); }
       });
-      var r = inp.getBoundingClientRect();
-      help.style.left = (r.left + scrollX) + 'px'; help.style.top = (r.bottom + scrollY + 2) + 'px';
-      document.body.appendChild(help);
+      help = h('div', { class: 'khelp' }, [
+        h('div', { class: 'kht' }, [h('b', { text: '계정코드도움' }), h('span', { class: 'x', text: '✕', onmousedown: function (e) { e.preventDefault(); closeHelp(); r.acc.focus(); } })]),
+        h('div', { class: 'khs' }, [h('span', { class: 'sel', text: '전체' }), q]),
+        h('div', { class: 'khl' }, [h('table', {}, [h('thead', {}, [h('tr', {}, [h('th', { text: '코드' }), h('th', { text: '계정명' }), h('th', { text: '참고' })])]), list])]),
+        h('div', { class: 'khb' }, [h('span', { text: '확인(Enter)' }), h('span', { text: '취소(Esc)' })])
+      ]);
+      wrap.appendChild(help); fill(); setTimeout(function () { q.focus(); }, 0);
     }
-    function moveHelp(d) { helpIdx = (helpIdx + d + helpList.length) % helpList.length; U.$$('div', help).forEach(function (x, k) { x.classList.toggle('on', k === helpIdx); }); }
-    function pickHelp() { if (!help || !helpFor) return; helpFor.value = helpList[helpIdx].name; hideHelp(); }
-    function hideHelp() { if (help) { help.remove(); help = null; } }
-    var tDr = h('td'), tCr = h('td');
+    function closeHelp() { if (help) { help.remove(); help = null; } }
     function total() {
-      var d = 0, c = 0; rows.forEach(function (r) { var v = +r.amt.value.replace(/[^\d]/g, '') || 0; if (r.side === 'dr') d += v; else c += v; });
-      tDr.textContent = '차변 ' + d.toLocaleString('ko-KR'); tCr.textContent = '대변 ' + c.toLocaleString('ko-KR');
-      tDr.style.color = tCr.style.color = d === c ? '#0d7a4a' : '#c4321b';
+      var d = 0, c = 0;
+      rows.forEach(function (r) { var g = r.g.value, v = amtOf(r); if (!v) return; if (g === '3') d += v; else if (g === '4') c += v; else if (g === '1' || g === '2') { d += v; c += v; } });
+      tDr.textContent = d ? d.toLocaleString('ko-KR') : ''; tCr.textContent = c ? c.toLocaleString('ko-KR') : '';
+      diffEl.textContent = d === c ? '' : (d - c).toLocaleString('ko-KR');
     }
-    for (var i = 0; i < nDr; i++) addRow('dr', opts.prefill ? (it.dr || [])[i] : null);
-    for (var j = 0; j < nCr; j++) addRow('cr', opts.prefill ? (it.cr || [])[j] : null);
-    var table = h('table', {}, [
-      h('thead', {}, [h('tr', {}, [h('th', { text: '구분' }), h('th', { text: '코드' }), h('th', { text: '계정과목' }), h('th', { text: '거래처' }), h('th', { text: '금액' })])]),
+    for (var i = 0; i < 4; i++) addRow();
+    var table = h('table', { class: 'kgrid' }, [
+      h('thead', {}, [h('tr', {}, ['일', '번호', '구분', '계 정 과 목', '', '거 래 처', '', '적 요', '차 변', '대 변'].map(function (t, k) { return h('th', { text: t, colspan: (k === 3 || k === 5) ? 2 : null }); }).filter(function (x, k) { return k !== 4 && k !== 6; }))]),
       tbody,
-      h('tfoot', {}, [h('tr', {}, [h('td', { colspan: 3 }), tDr, tCr])])
+      h('tfoot', {}, [h('tr', {}, [h('td', { colspan: 8, class: 'c', text: '합          계' }), tDr, tCr])])
     ]);
-    var wrap = h('div', { class: 'slip' }, [table]);
-    var more = h('div', { class: 'row', style: 'margin-top:8px;gap:8px' }, [
-      h('button', { class: 'btn', text: '+ 차변 줄', onclick: function () { addRow('dr'); reorder(); } }),
-      h('button', { class: 'btn', text: '+ 대변 줄', onclick: function () { addRow('cr'); reorder(); } }),
-      h('span', { class: 'dim', style: 'font-size:14px', text: '계정 칸에서 두 글자 치면 코드도움 · Enter로 다음 칸 · F2 코드도움' })
+    var wrap = h('div', { class: 'kclep' }, [
+      h('div', { class: 'ktitle' }, [h('b', { text: '일반전표입력' }), h('span', { class: 'kco', text: '1184 레이드상사  ·  2024-01-01~2024-12-31' })]),
+      h('div', { class: 'ktool' }, ['닫기', '코드', '삭제', '인쇄', '조회'].map(function (t) { return h('span', { text: t }); })),
+      h('div', { class: 'kdate' }, [h('span', { class: 'box', text: '2024' }), ' 년 ', h('span', { class: 'box', text: mon || '  ' }), ' 월 ', h('span', { class: 'box', text: day || '  ' }), ' 일', h('span', { style: 'margin-left:18px', text: '대차차액:' }), diffEl]),
+      h('div', { class: 'kbody' }, [table]),
+      h('div', { class: 'ktip' }, [h('b', { text: 'Tip' }), tip])
     ]);
-    function reorder() { rows.sort(function (a, b) { return (a.side === 'dr' ? 0 : 1) - (b.side === 'dr' ? 0 : 1); }); rows.forEach(function (r) { tbody.appendChild(r.tr); }); }
+    var more = h('div', { class: 'row', style: 'margin-top:8px;gap:8px;flex-wrap:wrap' }, [
+      h('button', { class: 'btn', text: '+ 줄 추가', onclick: function () { addRow().g.focus(); } }),
+      h('span', { class: 'dim', style: 'font-size:14px', text: '구분 숫자 → 계정 이름 치고 Enter(코드도움) → 금액 Enter → 다음 줄. 출금·입금은 현금 줄을 따로 안 써요.' })
+    ]);
     total();
-    function read() {
+    function lines() {
       var out = { dr: [], cr: [] };
       rows.forEach(function (r) {
-        var a = canon(r.acc.value), v = +r.amt.value.replace(/[^\d]/g, '') || 0;
-        if (!a && !v) return;
-        out[r.side].push({ a: a, v: v, p: r.par.value.trim(), r: r });
+        var g = r.g.value, a = canon(r.acc.value), v = amtOf(r), p = r.par.value.trim();
+        if (!g && !a && !v) return;
+        var L = { a: a, v: v, p: p, r: r };
+        if (g === '3') out.dr.push(L); else if (g === '4') out.cr.push(L);
+        else if (g === '1') { out.dr.push(L); out.cr.push({ a: '현금', v: v, p: '', r: r, auto: true }); }
+        else if (g === '2') { out.cr.push(L); out.dr.push({ a: '현금', v: v, p: '', r: r, auto: true }); }
+        else out.dr.push({ a: a, v: v, p: p, r: r, bad: true });
       });
       return out;
     }
     function grade() {
-      var got = read(), msgs = [], ok = true;
+      var got = lines(), msgs = [], ok = true;
       ['dr', 'cr'].forEach(function (side) {
         var exp = (it[side] || []).map(function (l) { return { a: canon(l[0]), v: +l[1], p: l[2] || '' }; });
         var used = {};
         got[side].forEach(function (g) {
+          if (g.bad) { ok = false; g.r.tr.classList.add('bad'); msgs.push('구분(1~4)을 먼저 입력하세요'); return; }
           var k = -1;
           exp.forEach(function (e, idx) { if (k < 0 && !used[idx] && e.a === g.a && e.v === g.v) k = idx; });
           if (k >= 0) {
             used[k] = 1;
             var e = exp[k];
-            if (e.p && partnerNeeded(e.a) && !g.p) { ok = false; msgs.push(e.a + ' 줄에 거래처(' + e.p + ')를 빼먹었어요 — 시험에선 0점!'); g.r.tr.classList.add('bad'); }
-            else g.r.tr.classList.add('good');
+            if (e.p && partnerNeeded(e.a) && !g.p && !g.auto) { ok = false; msgs.push(e.a + ' 줄에 거래처(' + e.p + ')를 빼먹었어요 — 시험에선 감점!'); g.r.tr.classList.add('bad'); }
+            else if (!g.auto) g.r.tr.classList.add('good');
           } else { ok = false; g.r.tr.classList.add('bad'); }
         });
         if (Object.keys(used).length !== exp.length) ok = false;
       });
-      return { ok: ok, msgs: msgs };
+      if (!ok && diffEl.textContent) msgs.push('대차차액 ' + diffEl.textContent + ' — 차변 합계와 대변 합계가 달라요');
+      if (!ok) rows.forEach(function (r) { if (r.g.value === '1' && it.dr && it.dr.length + (it.cr || []).length > 2) msgs.push('여러 줄 거래는 출금전표(1)가 아니라 차변(3)·대변(4)으로!'); });
+      return { ok: ok, msgs: msgs.filter(function (m, i, a) { return a.indexOf(m) === i; }) };
     }
-    function focus() { rows[0].acc.focus(); }
-    return { el: h('div', {}, [wrap, more]), grade: grade, focus: focus, hideHelp: hideHelp, clearMarks: function () { rows.forEach(function (r) { r.tr.classList.remove('bad', 'good'); }); } };
+    function focus() { rows[0].g.focus(); }
+    return { el: h('div', {}, [wrap, more]), grade: grade, focus: focus, hideHelp: closeHelp, clearMarks: function () { rows.forEach(function (r) { r.tr.classList.remove('bad', 'good'); }); } };
   }
   function entryHtml(it) {
     function line(l) { return '<b>' + U.esc(l[0]) + '</b>' + (l[2] ? '(' + U.esc(l[2]) + ')' : '') + ' ' + U.fmt(l[1]); }
