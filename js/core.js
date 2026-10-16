@@ -2,7 +2,7 @@
 (function (W) {
   'use strict';
   // 실제 서버 주소(배포 후 채움). localhost 에서는 ?api= 로 바꿀 수 있다.
-  var PROD_API = '';
+  var PROD_API = 'https://script.google.com/macros/s/AKfycbwxtpmYVfaHTHcuA5t-8ecvXhe-qDSi1GxVeRxfhmqASyC40gY7sSf65nuIu3hb-JE1Vg/exec';
   var qs = new URLSearchParams(location.search);
   var isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   var API = (isLocal && qs.get('api')) || PROD_API;
