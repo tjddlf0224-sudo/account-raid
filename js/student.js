@@ -355,7 +355,15 @@
     });
     area.appendChild(h('div', { class: 'h', style: 'text-align:center;font-size:34px', text: f.bossCleared ? '보스 처치 성공! 🏆' : '오늘의 순위' }));
     area.appendChild(pod);
-    var aw = h('div', { class: 'panel', id: 'myAward' }, [h('div', { class: 'muted', text: '내 보상을 받는 중…' })]);
+    if (f.awards && f.awards.length) {
+      var g = h('div', { class: 'awgrid' });
+      f.awards.forEach(function (x) {
+        var B = U.BADGES[x.k] || [x.k, 'medal3', ''];
+        g.appendChild(h('div', { class: 'aw' + (x.sid === S.sid ? ' mine' : '') }, [h('img', { src: 'assets/img/ic/' + B[1] + '.webp', alt: '' }), h('div', { class: 'h', style: 'font-size:18px', text: B[0] }), h('img', { class: 'av', src: U.avSrc(x.v), alt: '' }), h('b', { text: x.n }), h('div', { class: 'dim', style: 'font-size:12px', text: B[2] })]));
+      });
+      area.appendChild(h('div', { class: 'h', style: 'font-size:24px;margin:6px 0 8px', text: '오늘의 상' })); area.appendChild(g);
+    }
+    var aw = h('div', { class: 'panel', id: 'myAward', style: 'margin-top:14px' }, [h('div', { class: 'muted', text: '내 보상을 받는 중…' })]);
     area.appendChild(aw);
     area.appendChild(h('div', { class: 'row', style: 'justify-content:center;margin-top:14px' }, [
       h('button', { class: 'btn gold big', html: U.icon('chest') + ' 카드팩 열기', onclick: function () { openPack(); } }),

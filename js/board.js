@@ -118,15 +118,16 @@
       var box = $('#bResult'); if (!box || box.dataset.done === String(r.ended)) return;
       box.dataset.done = String(r.ended); box.innerHTML = '';
       if (!r.final) { box.appendChild(h('div', { class: 'bbig', style: 'text-align:center;margin-top:120px', text: '결과 발표를 기다리는 중…' })); return; }
-      var f = r.final, pod = h('div', { class: 'podium', style: 'transform:scale(1.5);margin:90px 0 110px' });
+      var f = r.final, pod = h('div', { class: 'podium', style: 'transform:scale(1);margin:10px 0 18px' });
       [1, 0, 2].forEach(function (i) { var p = f.top[i]; if (!p) return; pod.appendChild(h('div', { class: 'p' }, [h('img', { class: 'a', src: U.avSrc(p.v) }), h('div', { class: 'h', style: 'font-size:20px', text: p.n }), h('div', { class: 'gold', text: U.fmt(p.s) }), h('div', { class: 'blk', text: String(i + 1) })])); });
-      box.appendChild(h('div', { class: 'bbig', style: 'text-align:center', text: f.bossCleared ? '보스 처치 성공! 🏆' : '오늘의 원정 결과' }));
+      box.appendChild(h('div', { class: 'bbig', style: 'text-align:center;font-size:56px', text: f.bossCleared ? '보스 처치 성공!' : '오늘의 원정 결과' }));
       box.appendChild(pod);
-      var nm = {}; s.list.forEach(function (o) { nm[o.sid] = o.n; });
-      var aw = [['crown', '오늘의 MVP', f.top[0] && f.top[0].n], ['medal1', '정확왕', nm[f.accTop]], ['bolt', '레이드왕', nm[f.dmgTop]], ['fire', '막타왕', nm[f.lastHit]]];
-      box.appendChild(h('div', { style: 'display:grid;grid-template-columns:repeat(4,1fr);gap:16px' }, aw.filter(function (a) { return a[2]; }).map(function (a) {
-        return h('div', { class: 'panel', style: 'text-align:center' }, [h('img', { src: 'assets/img/ic/' + a[0] + '.webp', style: 'width:90px' }), h('div', { class: 'muted', style: 'font-size:22px', text: a[1] }), h('div', { class: 'bbig', style: 'font-size:40px', text: a[2] })]);
-      })));
+      var grid = h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px' });
+      (f.awards || []).forEach(function (x) {
+        var B = U.BADGES[x.k] || [x.k, 'medal3', ''];
+        grid.appendChild(h('div', { class: 'panel', style: 'text-align:center;padding:8px' }, [h('div', { class: 'row', style: 'justify-content:center;gap:6px' }, [h('img', { src: 'assets/img/ic/' + B[1] + '.webp', style: 'width:40px' }), h('div', { class: 'muted', style: 'font-size:19px', text: B[0] })]), h('div', { class: 'row', style: 'justify-content:center;gap:6px' }, [h('img', { src: U.avSrc(x.v), style: 'width:54px;height:54px' }), h('div', { class: 'bbig', style: 'font-size:28px', text: x.n })])]));
+      });
+      box.appendChild(grid);
       FX.play('win'); FX.rain(300);
     } else {
       var p = $('#bProg'); if (p) p.textContent = s.done + ' / ' + s.total;

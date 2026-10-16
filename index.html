@@ -217,6 +217,11 @@ main#stage{padding-bottom:110px}
 .lvup{font-family:var(--hfont);font-size:64px;color:var(--gold);text-shadow:0 6px 0 #7a4300,0 0 40px rgba(255,207,74,.8);animation:lvup 1.6s}
 @keyframes lvup{0%{transform:scale(.2);opacity:0}40%{transform:scale(1.2);opacity:1}100%{transform:scale(1)}}
 
+/* 오늘의 상 */
+.awgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.aw{text-align:center;padding:10px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.aw img{width:44px;height:44px} .aw img.av{width:56px;height:56px;display:block;margin:2px auto}
+.aw.mine{border-color:var(--gold);box-shadow:0 0 18px rgba(255,207,74,.45);background:rgba(255,207,74,.12)}
 /* 교사·전광판 */
 .tgrid{width:100%;border-collapse:collapse;font-size:15px}
 .tgrid th{position:sticky;top:0;background:#241a58;text-align:left;padding:8px;font-size:13px;color:var(--ink2)}

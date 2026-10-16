@@ -47,6 +47,7 @@ window.ACCOUNTS = [
   { code: 262, name: '미지급비용', cls: '부채', grp: '유동부채', r: 'SR' },
   { code: 263, name: '선수수익', cls: '부채', grp: '유동부채', r: 'SR' },
   { code: 293, name: '장기차입금', cls: '부채', grp: '비유동부채', r: 'R' },
+  { code: 294, name: '임대보증금', cls: '부채', grp: '비유동부채', r: 'SR' },
   { code: 295, name: '퇴직급여충당부채', cls: '부채', grp: '비유동부채', r: 'SR' },
   // 자본
   { code: 331, name: '자본금', cls: '자본', grp: '자본', r: 'N' },
@@ -100,4 +101,4 @@ window.ACCOUNT_ALIAS = { '접대비': '기업업무추진비', '현금및현금�
 window.ACCOUNT_BY_NAME = {};
 window.ACCOUNTS.forEach(function (a) { window.ACCOUNT_BY_NAME[a.name] = a; });
 // 거래처 입력이 필요한 계정(채권·채무)
-window.PARTNER_ACCOUNTS = ['외상매출금', '받을어음', '미수금', '선급금', '단기대여금', '장기대여금', '외상매입금', '지급어음', '미지급금', '선수금', '단기차입금', '장기차입금', '가지급금', '가수금'];
+window.PARTNER_ACCOUNTS = ['외상매출금', '받을어음', '미수금', '선급금', '단기대여금', '장기대여금', '외상매입금', '지급어음', '미지급금', '선수금', '단기차입금', '장기차입금', '가지급금', '가수금', '임차보증금', '임대보증금'];

@@ -77,7 +77,12 @@
   function levelOf(xp) { var lv = 1, need = 600, rest = xp || 0; while (rest >= need && lv < 99) { rest -= need; lv++; need = 400 + 200 * lv; } return { lv: lv, cur: rest, need: need }; }
 
   var TURN_LABEL = { gather: '집결', spell: '주문 각인', drill: '연습 전투', quest: '실전 퀘스트', raid: '보스 레이드', result: '결과', exam: '실전 모의고사', arcade: '오락실 원정' };
-  var BADGES = { mvp: ['오늘의 MVP', 'crown'], sharp: ['정확왕', 'medal1'], raider: ['레이드왕', 'bolt'], lasthit: ['막타왕', 'fire'], perfect: ['무결점', 'gem'] };
+  // 차시 상: [이름, 아이콘, 한 줄 설명]
+  var BADGES = { mvp: ['오늘의 MVP', 'crown', '오늘 점수 1등'], growth: ['성장왕', 'trophy', '지난 차시보다 정확도가 가장 많이 오름'],
+    sharp: ['정확왕', 'medal1', '정확도 1등'], raider: ['레이드왕', 'bolt', '보스에게 가장 큰 피해'], lasthit: ['막타왕', 'fire', '보스 마지막 일격'],
+    combo: ['콤보왕', 'gem', '최고 연속 정답'], speed: ['스피드왕', 'timer', '연습 전투 가장 빨리 완료'], quest: ['기출왕', 'medal2', '실전 퀘스트 1등'],
+    grit: ['오답 정복상', 'key', '틀린 문제를 끝까지 다시 쳐서 정복'], attend: ['개근상', 'medal3', '연속 출석 가장 김'],
+    finish: ['완주', 'chest_open', '모든 턴 완료'], perfect: ['무결점', 'scroll', '정확도 100%'] };
 
   function stageData(id) { return (W.STAGES || {})[id] || null; }
   // 차시의 턴 구성(교사가 방을 열 때 서버에 보냄): 오락실 원정이 있는 차시는 연습 전투 뒤에 끼운다
