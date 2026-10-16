@@ -482,7 +482,8 @@
         } else {
           var numeric = /^[\d,]+$/.test(String(v.a));
           var inp = typeField({ numeric: numeric, placeholder: numeric ? '숫자' : '답', onEnter: function (val) {
-            var ok = numeric ? (+String(val).replace(/[^\d]/g, '') === +String(v.a).replace(/[^\d]/g, '')) : U.norm(val).indexOf(U.norm(v.a)) >= 0 || U.norm(v.a).indexOf(U.norm(val)) >= 0 && U.norm(val).length >= 2;
+            var nw = function (x) { return U.norm(x).replace(/[원\-\/]/g, ''); };
+            var ok = numeric ? (+String(val).replace(/[^\d]/g, '') === +String(v.a).replace(/[^\d]/g, '')) : nw(val).indexOf(nw(v.a)) >= 0;
             items[stage.id + '-v' + i] = [ok ? 1 : 0, ((items[stage.id + '-v' + i] || [0, 0])[1] || 0) + 1];
             if (ok) { inp.disabled = true; res.textContent = '인증 완료!'; res.className = 'mint'; FX.play('seal'); score += 150; verified++; FX.popOn(inp, '+150'); }
             else { res.textContent = '다시 확인!'; res.className = 'red'; FX.play('no'); }
